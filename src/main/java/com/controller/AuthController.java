@@ -1,6 +1,7 @@
 package com.controller;
 
 import com.entity.User;
+import com.security.JwtTokenProvider;
 import com.service.UserService;
 import com.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
     // Not: İleride buraya JwtUtil veya AuthenticationManager sınıfını da enjekte edeceğiz.
 
     // PC Uygulamasından Yeni Kayıt (Register) İstemi
@@ -23,17 +25,16 @@ public class AuthController {
     }
 
     // PC Uygulamasından Giriş (Login) İstemi
+    // AuthController.java içindeki login metodu:
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
-
         User user = userService.getUserByEmail(email);
 
-        // Şimdilik sadece basit bir metin kontrolü yapıyoruz.
         if (user.getPassword().equals(password)) {
-            // Başarılı olursa PC uygulamasına bir giriş anahtarı dönüyoruz
-            return ResponseEntity.ok("Giriş başarılı! (Security katmanı yazıldığında burası JWT Token dönecek)");
+            // Şifre doğruysa, Token Provider'ı çağır ve e-posta ile token üret
+            String token = jwtTokenProvider.generateToken(email);
+            return ResponseEntity.ok(token); // PC Uygulamasına JWT döner
         } else {
-            // Parola eşleşmezse kendi yazdığımız özel hatayı fırlatıyoruz
             throw new BusinessException("Hatalı şifre girdiniz!");
         }
     }
