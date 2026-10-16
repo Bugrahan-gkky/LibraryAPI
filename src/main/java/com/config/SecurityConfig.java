@@ -1,5 +1,7 @@
 package com.config;
 
+import com.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,25 +10,30 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    // SecurityConfig.java içindeki değişiklik:
+
+    // Sınıfın başına filtreyi enjekte edin
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // PC uygulamasından gelen isteklerde CSRF korumasına ihtiyacımız yok
                 .csrf(AbstractHttpConfigurer::disable)
-                // JWT kullandığımız için sunucuda oturum (session) tutmuyoruz, her şey stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // AuthController'daki giriş ve kayıt işlemlerine herkes erişebilir
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Geri kalan TÜM isteklere (Kitap ekleme, ödünç alma vb.) kimlik doğrulaması zorunludur
                         .anyRequest().authenticated()
                 );
 
-        // Not: İleride JwtAuthenticationFilter'ı da buraya ekleyeceğiz.
+        // YENİ EKLENEN SATIR: Spring'in standart güvenlik filtresinden önce bizim JWT filtremizi çalıştır
+        http.addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }
