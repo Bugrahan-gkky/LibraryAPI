@@ -1,4 +1,4 @@
-package test.java.com.service;
+package com.service;
 
 public class LoanServiceTest {
 }

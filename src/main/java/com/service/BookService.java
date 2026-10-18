@@ -1,11 +1,12 @@
 package com.service;
 
-import com.entity.Book;
+import com.dto.request.BookCreateRequest;
+import com.dto.response.BookResponse;
 import java.util.List;
 
 public interface BookService {
-    Book addBook(Book book);
-    List<Book> getAllBooks();
-    Book getBookById(Long id);
+    BookResponse addBook(BookCreateRequest request);
+    List<BookResponse> getAllBooks();
+    BookResponse getBookById(Long id);
     void deleteBook(Long id);
 }

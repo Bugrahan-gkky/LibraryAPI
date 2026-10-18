@@ -1,9 +1,13 @@
 package com.controller;
 
+import com.dto.request.LoginRequest;
+import com.dto.response.TokenResponse;
+import com.dto.response.UserResponse;
 import com.entity.User;
+import com.exception.BusinessException;
 import com.security.JwtTokenProvider;
 import com.service.UserService;
-import com.exception.BusinessException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,25 +19,28 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
-    // Not: İleride buraya JwtUtil veya AuthenticationManager sınıfını da enjekte edeceğiz.
 
-    // PC Uygulamasından Yeni Kayıt (Register) İstemi
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        // Kayıt işlemini daha önce yazdığımız UserService'e devrediyoruz
+    public ResponseEntity<UserResponse> register(@RequestBody User user) {
         return ResponseEntity.ok(userService.createUser(user));
     }
 
-    // PC Uygulamasından Giriş (Login) İstemi
-    // AuthController.java içindeki login metodu:
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
-        User user = userService.getUserByEmail(email);
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+        // Şifre kontrolü için gerçek Entity'yi çekiyoruz
+        User user = userService.getUserEntityByEmail(request.getEmail());
 
-        if (user.getPassword().equals(password)) {
-            // Şifre doğruysa, Token Provider'ı çağır ve e-posta ile token üret
-            String token = jwtTokenProvider.generateToken(email);
-            return ResponseEntity.ok(token); // PC Uygulamasına JWT döner
+        if (user.getPassword().equals(request.getPassword())) {
+            String token = jwtTokenProvider.generateToken(user.getEmail());
+
+            // PC uygulamasına Token, Email ve Rol bilgisini paket halinde dönüyoruz
+            TokenResponse response = TokenResponse.builder()
+                    .token(token)
+                    .email(user.getEmail())
+                    .role(user.getRole() != null ? user.getRole().name() : "MEMBER")
+                    .build();
+
+            return ResponseEntity.ok(response);
         } else {
             throw new BusinessException("Hatalı şifre girdiniz!");
         }

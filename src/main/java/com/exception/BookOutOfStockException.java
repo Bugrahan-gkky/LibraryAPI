@@ -1,4 +1,7 @@
-package main.java.com.exception;
+package com.exception;
 
-public class BookOutOfStockException {
+public class BookOutOfStockException extends RuntimeException {
+    public BookOutOfStockException(String message) {
+        super(message);
+    }
 }

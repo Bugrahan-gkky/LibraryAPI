@@ -1,4 +1,4 @@
-package test.java.com.controller;
+package com.controller;
 
 public class BookControllerTest {
 }

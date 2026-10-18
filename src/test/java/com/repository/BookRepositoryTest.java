@@ -1,4 +1,4 @@
-package test.java.com.repository;
+package com.repository;
 
 public class BookRepositoryTest {
 }

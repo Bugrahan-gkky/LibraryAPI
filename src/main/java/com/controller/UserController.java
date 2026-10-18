@@ -1,5 +1,6 @@
 package com.controller;
 
+import com.dto.response.UserResponse;
 import com.entity.User;
 import com.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,23 +17,19 @@ public class UserController {
 
     private final UserService userService;
 
-    // Yeni kullanıcı kaydı (POST http://localhost:8080/api/users)
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
+    public ResponseEntity<UserResponse> createUser(@RequestBody User user) {
+        UserResponse createdUser = userService.createUser(user);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
-    // Tüm üyeleri getirir (GET http://localhost:8080/api/users)
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // Email'e göre kullanıcı arama (GET http://localhost:8080/api/users/search?email=ornek@mail.com)
     @GetMapping("/search")
-    public ResponseEntity<User> getUserByEmail(@RequestParam String email) {
+    public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 }
-
